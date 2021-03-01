@@ -1,41 +1,51 @@
 #include <pid.h>
 
-namespace pidreg {
+namespace neko {
     PID::PID()
-        : kp(0), ki(0), kd(0), previousError(0), currentTime(0), previousTime(0), sumOfError(0) {}
+        : time(micros), kp(0), ki(0), kd(0), previousError(0), sumOfErrors(0), currentTime(0), previousTime(0) {}
 
-    PID::PID(const double &kp, const double &ki, const double &kd)
-        : kp(kp), ki(ki), kd(kd), previousError(0), currentTime(0), previousTime(0), sumOfError(0) {}
+    PID::PID(double kp, double ki, double kd)
+        : time(micros), kp(kp), ki(ki), kd(kd), previousError(0), currentTime(0), previousTime(0) {}
 
-    
-    double PID::getImpact(const double &error) {
-        currentTime = millis();
+    PID::PID(std::function<unsigned long()> time, double kp, double ki, double kd)
+        : time(time), kp(kp), ki(ki), kd(kd), previousError(0), currentTime(0), previousTime(0) {}
+
+    double PID::getImpact(double error) {
+        currentTime = time();
         double out = getP(error) + getI(error) + getD(error);
         previousError = error;
-        previousTime = millis();
+        previousTime = currentTime;
         return out;
+    }
+
+    void PID::setTimeFun(std::function<unsigned long()> time) {
+        this->time = time;
+    }
+
+    std::function<unsigned long()> PID::getTimeFun() {
+        return time;
     }
 
     unsigned long PID::timeDifference() {
         return currentTime - previousTime;
     }
 
-    void PID::setCoef(const double &kp, const double &ki, const double &kd) {
+    void PID::setCoef(double kp, double ki, double kd) {
         //setting params
         this->kp = kp;
         this->ki = ki;
         this->kd = kd;
     }
 
-    void PID::setKp(const double &kp) {
+    void PID::setKp(double kp) {
         this->kp = kp;
     }
 
-    void PID::setKi(const double &ki) {
+    void PID::setKi(double ki) {
         this->ki = ki;
     }
 
-    void PID::setKd(const double &kd) {
+    void PID::setKd(double kd) {
         this->kd = kd;
     }
 
@@ -43,11 +53,15 @@ namespace pidreg {
         return kp;
     }
 
-    double PID::getKp() {
-        return kp;
+    double PID::getKi() {
+        return ki;
     }
 
-    double PID::getP(const double &error) {
+    double PID::getKd() {
+        return kd;
+    }
+
+    double PID::getP(double error) {
         //if Kp = 0 we don't need to count it, it's automatically 0
         if (kp == 0) {
             return 0;
@@ -55,16 +69,16 @@ namespace pidreg {
         return kp * error;
     }
 
-    double PID::getI(const double &error) {
+    double PID::getI(double error) {
         //if Ki = 0 we don't need to count it
         if (ki == 0) {
             return 0;
         }
-        sumOfError += error;
-        return ki * timeDifference() * sumOfError;
+        sumOfErrors += error;
+        return ki * timeDifference() * sumOfErrors;
     }
 
-    double PID::getD(const double &error) {
+    double PID::getD(double error) {
         //if Kd = 0 we don't need to count it
         if (kd == 0) {
             return 0;

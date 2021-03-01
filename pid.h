@@ -1,10 +1,11 @@
 #include <Arduino.h>
+#include <functional>
 
 #ifndef FFT_PID_H
 #define FFT_PID_H
-//lib version is 0.3
+//lib version is 0.6
 
-namespace pidreg {
+namespace neko {
     //TODO написать более подробное описание
     /**
      * @brief PID-regulator. 
@@ -13,11 +14,12 @@ namespace pidreg {
      */
     class PID {
     private:
+        std::function<unsigned long()> time;
         double kp;
         double ki;
         double kd;
         double previousError;
-        double sumOfError;
+        double sumOfErrors;
         unsigned long currentTime;
         unsigned long previousTime;
 
@@ -28,25 +30,35 @@ namespace pidreg {
          */
         unsigned long timeDifference();
 
-        double getP(const double &error);
-        double getI(const double &error);
-        double getD(const double &error);
+        double getP(double error);
+        double getI(double error);
+        double getD(double error);
 
     public:
         /**
-         * @brief Construct a new PID object with coefficients equal to zero
+         * @brief Construct a new PID object with coefficients equal to zero and micros as time function
          * 
          */
         PID();
 
         /**
-         * @brief Construct a new PID object with params
+         * @brief Construct a new PID object with params and micros as time function
          * 
          * @param kp proportional coefficient
          * @param ki integral coefficient
          * @param kd derivative coefficient
          */
-        PID(const double &kp, const double &ki = 0, const double &kd = 0);
+        PID(double kp, double ki = 0, double kd = 0);
+        
+        /**
+         * @brief Construct a new PID object
+         * 
+         * @param time function for getting time, usually micros or millis
+         * @param kp proportional coefficient
+         * @param ki integral coefficient
+         * @param kd derivative coefficient 
+         */
+        PID(std::function<unsigned long()> time, double kp = 0, double ki = 0, double kd = 0);
 
         /**
          * @brief Get the Impact value to system. Main function of regulator.
@@ -54,7 +66,7 @@ namespace pidreg {
          * @param error magnitude deviation
          * @return double - impact value to system
          */
-        double getImpact(const double &error);
+        double getImpact(double error);
 
         /**
          * @brief Set coefficients of the PID-regulator
@@ -63,26 +75,26 @@ namespace pidreg {
          * @param ki integral coefficient
          * @param kd derivative coefficient
          */
-        void setCoef(const double &kp, const double &ki, const double &kd);
+        void setCoef(double kp, double ki, double kd);
 
         /**
          * @brief Set the Kp coefficient
          * 
          * @param kp proportional coefficient
          */
-        void setKp(const double &kp);
+        void setKp(double kp);
         /**
          * @brief Set the Ki coefficient
          * 
          * @param ki integral coefficient
          */
-        void setKi(const double &ki);
+        void setKi(double ki);
         /**
          * @brief Set the Kp coefficient
          * 
          * @param kd derivative coefficient
          */
-        void setKd(const double &kd);
+        void setKd(double kd);
         
         /**
          * @brief Get the Kp coefficient
