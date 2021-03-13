@@ -3,7 +3,7 @@
 
 #ifndef FFT_PID_H
 #define FFT_PID_H
-//lib version is 0.6
+//lib version is 0.7
 
 namespace neko {
     //TODO написать более подробное описание
