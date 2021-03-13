@@ -1,4 +1,4 @@
-Library version is 0.3
+Library version is 0.6
 Now library doesn't give backward compatibility guarantee.
 
 
